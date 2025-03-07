@@ -17,7 +17,7 @@ players = {}
 # Regex patterns
 hand_number_pattern = re.compile(r"PokerStars Hand #(\d+)")
 player_pattern = re.compile(r"Seat (\d+): (\w+) \((\d+) in chips\)")
-action_pattern = re.compile(r"(\w+): (folds|calls|bets|raises) (\d+)?")
+action_pattern = re.compile(r"(\w+): (folds|calls|bets|raises|checks) (\d+)?")
 pot_pattern = re.compile(r"Total pot (\d+)")
 
 # Process each line
@@ -37,7 +37,14 @@ for line in raw_data:
     
     elif action_match := action_pattern.match(line):
         player, action, amount = action_match.groups()
-        current_hand["actions"].append({"player": player, "action": action, "amount": int(amount) if amount else 0})
+        if action == "folds":
+            amount = -1
+        elif action == "checks":
+            amount = 0
+        else:
+            amount = int(amount) if amount else 0  # Convert valid amounts
+        
+        current_hand["actions"].append({"player": player, "action": action, "amount": amount})
     
     elif pot_match := pot_pattern.match(line):
         current_hand["total_pot"] = int(pot_match.group(1))
@@ -49,6 +56,20 @@ if current_hand:
 # Convert to DataFrame
 df = pd.DataFrame(hands)
 
-# Display DataFrame
-import ace_tools as tools
-tools.display_dataframe_to_user(name="Poker Hands Analysis", dataframe=df)
+# Extract nth entry (e.g., second hand, index 1)
+def readline(n):
+    if 0 <= n < len(df):
+        nth_entry = df.iloc[n]
+        # Extract relevant values
+        hand_number = nth_entry["hand_number"]
+        action_values = [action["amount"] for action in nth_entry["actions"]]
+        total_pot = nth_entry["total_pot"]
+
+        # Final formatted list
+        result = [hand_number] + action_values + [total_pot]
+        print(result)
+    else:
+        print("Error: Index out of range.")
+
+for n in range(0, 3):
+    readline(n)
