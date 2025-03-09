@@ -1,3 +1,5 @@
+import findHand
+
 class Bot():
     def __init__(self, randomFactor, riskFactor, min, max, cash, seat, hands):
         self.riskFactor = riskFactor
@@ -16,11 +18,15 @@ class Bot():
             self.bet(min * 2)
         elif blind == "b":
             self.bet(min)
-
-    def CalcBet(self, round):
-        #isAnte?
-        return self.bet()
     
+    def calcHands(self, deck, hand, pool, players):
+        # highcard, pair, 2p, 3x, straight, full house, flush, 4x, royal flush
+        # 0,        1,    2,  3,  4,        5,          6,     7,  8
+        deck.size()
+        
+        #for i in range(0, 9):
+            #print(i)
+
     def bet(self, amt):
         betAmt = self.min
         self.cash -= betAmt
@@ -28,3 +34,10 @@ class Bot():
     
     def stats(self):
         print("Cash: {self.cash}, rFactor: {self.rFactor}, ")
+
+    def CalcBet(self, round):
+        #isAnte?
+        return self.bet()
+    
+    def hand(self, pool):
+        findHand.find(pool)
