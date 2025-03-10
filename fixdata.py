@@ -40,7 +40,7 @@ def process_csv(file_path, output_path):
     # Convert card strings to (value, suit) tuples
     df['Hand'] = df['Hand'].apply(parse_cards)
     df['Pool'] = df['Pool'].apply(parse_cards)
-    
+
     # Determine betting round
     df['Round'] = df['Pool'].apply(determine_round)
     
@@ -52,6 +52,6 @@ def process_csv(file_path, output_path):
     print(f"Processed  saved as {output_path}")
 
 # Example usage:
-#process_csv("Extended_Poker_Data.csv", "output.csv")
+process_csv("Extended_Poker_Data.csv", "output1.csv")
 
 print(prob(""))

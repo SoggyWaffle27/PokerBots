@@ -124,3 +124,4 @@ print(f"Predicted Bet: {predicted_bet[0]:.2f}")
 #     pool = pool + [(h[0], h[1])]
 #     print(pot)
 #     print(pool)
+
