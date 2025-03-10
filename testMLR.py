@@ -5,8 +5,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 import ast
 import strongerHand, findHand, deck
-from sklearn.preprocessing import StandardScaler
-
+from sklearn.preprocessing import MinMaxScaler
 
 # Load dataset
 file_path = "output.csv"
@@ -14,7 +13,6 @@ df = pd.read_csv(file_path, delimiter='\t')
 
 # Drop unnecessary columns
 df = df.drop(columns=['Unnamed: 1', 'Unnamed: 3'], errors='ignore')
-#df = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Ensure correct data types
 df['Hand'] = df['Hand'].apply(ast.literal_eval)
@@ -23,27 +21,18 @@ df['Pool'] = df['Pool'].apply(ast.literal_eval)
 df = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
 # Select features and target
-#features = ['Win Probability', 'Pot', 'Agro']#'Bluff','Round','Outcome', 'Payout (exc)'
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
-
-# Select features and target
-features = ['Win Probability', 'Pot', 'Agro']  # Features to use
+features = ['Win Probability', 'Agro']  # Features to use
 target = 'Bet'
 
-X = df[features]
+# Scale 'Pot' separately
+scaler = MinMaxScaler()
+df['Pot'] = scaler.fit_transform(df[['Pot']])  # Scale only 'Pot' column
+
+# Feature matrix
+X = df[features + ['Pot']]  # Include the scaled 'Pot' column
+
+# Target variable
 y = df[target]  # Don't scale target
-
-# Define scalers (None means no scaling applied)
-scalers = {     #MinMaxScaler()
-    'Win Probability': None,  # Scale to [0,1]
-    'Agro': None,             # Scale to [0,1]
-    'Pot': MinMaxScaler()  # No scaling applied (keeps original values)
-}
-
-# Apply scaling only where a scaler is provided
-for feature, scaler in scalers.items():
-    if scaler is not None:
-        X[[feature]] = scaler.fit_transform(X[[feature]])
 
 # Split dataset
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -67,15 +56,17 @@ print(f"Root Mean Squared Error: {rmse:.2f}")
 
 import matplotlib.pyplot as plt
 
-# Plot each feature against 'Bet' separately
-# for feature in ['Win Probability', 'Pot', 'Agro', 'Bluff', 'Payout (exc)', 'Round']:
-#     plt.figure(figsize=(6, 4))
-#     plt.scatter(df[feature], df['Bet'], alpha=0.5)
-#     plt.xlabel(feature)
-#     plt.ylabel('Bet')
-#     plt.title(f'Bet vs {feature}')
-#     plt.show()
+show_graph = True
 
+if show_graph:
+    #Plot each feature against 'Bet' separately
+    for feature in ['Win Probability']:#, 'Pot', 'Agro', 'Bluff', 'Payout (exc)', 'Round']:
+        plt.figure(figsize=(6, 4))
+        plt.scatter(df[feature], df['Bet'], alpha=0.5)
+        plt.xlabel(feature)
+        plt.ylabel('Bet')
+        plt.title(f'Bet vs {feature}')
+        plt.show()
 
 deck = deck.CardDeck()
 
@@ -85,11 +76,15 @@ hand = hand + pool
 deckL = [(v, s) for v in range(2, 15) for s in "CDHS" if (v, s) not in hand]
 ignore, hand_rank, high_card, top_card = findHand.best_hand(hand)
 deckL = deck.deck  # Get the remaining deck
+new_pot = 20
+Pot = scaler.transform(pd.DataFrame([[new_pot]], columns=['Pot'])).flatten()[0]  # ✅ Fix
+
+
 new_data = pd.DataFrame({
     'Win Probability': [strongerHand.probability_of_stronger_hand(findHand.best_hand(hand), pool, deckL, num_opponents=1, num_simulations=5000)],
-    'Pot': [20],
     #'Round': [2],
-    'Agro': [0.3]
+    'Agro': [0.3],
+    'Pot': [Pot]
     #'Bluff': [0],
     #'Outcome': [0]  # Neutral estimate
 })

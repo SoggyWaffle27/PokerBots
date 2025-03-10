@@ -5,7 +5,7 @@ Bet Size= β0 + β1 (Win Probability) + β2 (Pot Size) + β3 (Bluff Factor) 
 
 expected value
 
-Reminder, if top hand, high bets
+Reminder, if top hand, high bets (Log Winprob?)
 
 Agro and first bet combine to check
 
